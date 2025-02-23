@@ -116,7 +116,7 @@ bool workspace_t::set_sel_item(const size_t sel_idx, bool emit_signal, bool emit
     }
     ws_item->m_selected = true;
     if (emit_hs_event) {
-      assert(m_cur_itm.commit_value_exclusive(sel_idx) == hs_result_e::hs_success);
+      assert(m_cur_itm.commit_value_exclusive(static_cast<int>(sel_idx)) == hs_result_e::hs_success);
       astate->tlog("@@@ DEBUG: sel_idx = {}, m_cur_itm.val == {}",
                    sel_idx,
                    m_cur_itm.get_value());
@@ -633,7 +633,7 @@ void workspace_t::set_edit_type (const ws_edit_type_e new_edit_type, bool emit_h
   p_edit_type = new_edit_type;
   astate->astate_evd->cur_ws_edit_type_changed();
   if (emit_hs_event)
-    m_cur_edit_type.commit_value_exclusive(new_edit_type);
+    m_cur_edit_type.commit_value_exclusive(static_cast<int>(new_edit_type));
 }
 
 ws_edit_type_e workspace_t::get_edit_type() {

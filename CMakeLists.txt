@@ -1,20 +1,33 @@
-cmake_minimum_required (VERSION 3.2)
-project(qppcad CXX C)
+cmake_minimum_required (VERSION 3.16)
+project(QppCAD CXX C)
 
-#set(CMAKE_BUILD_TYPE "Debug")
-#set(CMAKE_BUILD_TYPE "Release")
-if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+set(CMAKE_PREFIX_PATH "D:/envs/Qt5/5.15.2/msvc2019_64/lib/cmake/Qt5")
+
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmakes/cpack_config.cmake)
+
+set(PRODUCT_OUT_DIR ".")
+set(CMAKE_INSTALL_PREFIX ${PRODUCT_OUT_DIR})
+set(CPACK_INSTALL_PREFIX "QppCAD")
+set(DEPLOY_DIR ${CMAKE_SOURCE_DIR}/deploy)
+file(MAKE_DIRECTORY ${DEPLOY_DIR})
+
+
+SET(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+SET(CMAKE_INSTALL_RPATH "\${ORIGIN}")
+
+if (NOT CMAKE_BUILD_TYPE)
 	message(STATUS "No build type selected, default to RelWithDebInfo")
   set(CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE STRING "Build type (default RelWithDebInfo)" FORCE)
 endif()
-message("-- Build type: ${CMAKE_BUILD_TYPE}")
+message("-- Build type: ${CMAKE_BUILD_TYPE}, config type: ${CMAKE_CONFIGURATION_TYPES}")
+
+
+set(QPPCAD_TESTS "OFF" CACHE BOOL "build test suite and minor stuff")
+set(WITH_VTUNE "OFF" CACHE BOOL "build with VTUNE instrumentation")
+
+add_subdirectory(src/launcher)
 
 set(ADDITIONAL_LIBRARIES "")
-
-set(QPPCAD_TESTS "ON" CACHE BOOL "build test suite and minor stuff")
-message("-- With tests: ${QPPCAD_TESTS}")
-
-set(WITH_VTUNE "OFF" CACHE BOOL "build with VTUNE instrumentation")
 message("-- With VTune api: ${WITH_VTUNE}")
 if(WITH_VTUNE)
     set(VTUNE_TOP_DIR "/home/$ENV{USERNAME}/intel/vtune_profiler")
@@ -38,20 +51,21 @@ if(NOT MSVC)
       "-DQPPCAD_RELEASE ${CMAKE_CXX_FLAGS} -O3 -ffast-math -fno-finite-math-only -g3 -ggdb")
 elseif(MSVC)
   add_definitions(-D_ENABLE_EXTENDED_ALIGNED_STORAGE -DHAVE_SNPRINTF)
-  add_compile_options("/std:c++latest")
+  add_compile_options("/std:c++17")
+  add_compile_options("/W0")
+  add_compile_options("/bigobj")
 endif()
 
 #set (CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS} -fno-omit-frame-pointer -fsanitize=address")
 set(OpenGL_GL_PREFERENCE "GLVND")
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 
 macro(set_option option value)
   set(${option} ${value} CACHE INTERNAL "" FORCE)
 endmacro()
 
 #to prevent building qpp python bindings
-set_option(PYTHON_BINDINGS OFF)
+set_option(PYTHON_BINDINGS ON)
 set_option(BUILD_TESTS OFF)
 set_option(BUILD_EXAMPLES OFF)
 set_option(BUILD_QPP_TESTS OFF)
@@ -82,7 +96,7 @@ add_custom_target(cad_files SOURCES ${ide_cpp_qppcad} ${ide_hpp_qppcad})
 
 find_package(OpenGL REQUIRED)
 if(NOT OPENGL_FOUND)
-  message("ERROR: OpenGL not found")
+  message(WARNING "ERROR: OpenGL not found")
 endif(NOT OPENGL_FOUND)
 set(GL_LIBRARY GL  X11)
 
@@ -105,21 +119,19 @@ if(GIT_FOUND)
   message( STATUS "GIT hash: ${_build_version}")
 else()
   message(STATUS "GIT not found")
+  set(_build_version 1)
 endif()
 
 string(TIMESTAMP _time_stamp)
 
-find_package(Qt5Core CONFIG REQUIRED)
-find_package(Qt5Widgets CONFIG REQUIRED)
-find_package(Qt5OpenGL CONFIG REQUIRED)
-find_package(Qt5Svg)
-find_package(Qt5Charts)
+find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Core Widgets OpenGL Svg Charts)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core Widgets OpenGL Svg Charts)
 
 set(_qppcad_qt_build_version ${Qt5Widgets_VERSION})
-
 configure_file(${CMAKE_SOURCE_DIR}/src/qppcad/core/gitversion_ex.h.in
                ${CMAKE_SOURCE_DIR}/src/qppcad/core/gitversion_ex.h @ONLY)
 
+message(STATUS "qt include: ${Qt5Core_INCLUDE_DIRS}")
 include_directories(${Qt5Core_INCLUDE_DIRS})
 include_directories(${Qt5Widgets_INCLUDE_DIRS})
 include_directories(${Qt5Charts_INCLUDE_DIRS})
@@ -176,13 +188,11 @@ if (QPPCAD_TESTS)
 
     target_link_libraries(qppcad-tests qpp)
     target_link_libraries(sflow-tests qpp)
-
-    qt5_use_modules(sflow-tests Core Gui Widgets)
 endif()
 
 #build qppcad application
 add_executable(
-    qppcad
+    ${PROJECT_NAME}
 
     src/qppcad/core/main.cpp
     src/qppcad/core/gitversion.cpp
@@ -229,12 +239,11 @@ add_executable(
     ${SRC_TOOLS}
     ${SRC_PYTHON_EMBEDDED}
     ${QRCS}
+    resources.rc
     )
 
-qt5_use_modules(qppcad Core OpenGL Gui Widgets)
-
 if(WIN32)
-   target_link_libraries(qppcad
+   target_link_libraries(${PROJECT_NAME}
     qpp
     pugixml
     Qt5::Widgets
@@ -245,7 +254,7 @@ if(WIN32)
     pybind11::embed
     ${PYTHON_LIBRARIES})
 else()
-    target_link_libraries(qppcad
+    target_link_libraries(${PROJECT_NAME}
     qpp
     pugixml
     Qt5::Widgets
@@ -262,7 +271,7 @@ else()
     m)
 endif()
 
-target_compile_definitions(qppcad PUBLIC -DQPPCAD_PY_EXPORT -DEXTENDED_SFLOW)
+target_compile_definitions(${PROJECT_NAME} PUBLIC -DQPPCAD_PY_EXPORT -DEXTENDED_SFLOW)
 
 find_package(Doxygen)
 if(DOXYGEN_FOUND)
@@ -272,3 +281,26 @@ if(DOXYGEN_FOUND)
         COMMENT "Building user's documentation into doxyDoc build dir..."
     )
 endif()
+
+#-${_time_stamp}-${_build_version}
+set(CPACK_PACKAGE_FILE_NAME "${PROJECT_NAME}-${CPACK_PACKAGE_VERSION}-${_build_version}-py312")
+
+get_target_property(_QMAKE_EXE_PATH Qt5::qmake IMPORTED_LOCATION)
+get_filename_component(_QT_BIN_PATH "${_QMAKE_EXE_PATH}" DIRECTORY)
+find_program(_DEPLOYQT_EXE windeployqt HINTS "${_QT_BIN_PATH}")
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+        COMMAND "${CMAKE_COMMAND}"
+        -E env PATH="${_QT_BIN_PATH}"
+        ${_DEPLOYQT_EXE} $<TARGET_FILE:${PROJECT_NAME}> --dir ${DEPLOY_DIR}
+        COMMENT "Running windeployqt..."
+        )
+
+# install(TARGETS pyqpp RUNTIME DESTINATION ${PRODUCT_OUT_DIR})
+install(FILES ${CMAKE_SOURCE_DIR}/data/images/qpp128x128.ico DESTINATION ${PRODUCT_OUT_DIR})
+install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION ${PRODUCT_OUT_DIR})
+install(DIRECTORY ${DEPLOY_DIR}/ DESTINATION ${PRODUCT_OUT_DIR} FILES_MATCHING PATTERN "*")
+
+install(FILES LICENSE README.md DESTINATION doc)
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/data/refs DESTINATION data)
+
+include(CPack)

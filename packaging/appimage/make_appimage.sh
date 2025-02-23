@@ -15,7 +15,7 @@ mkdir qppcad
 mkdir qppcad/usr
 mkdir qppcad/usr/bin
 mkdir qppcad/usr/lib
-cp ../../bin/qppcad qppcad/usr/bin/
+cp ../../bin/QppCAD qppcad/usr/bin/
 chmod +x qppcad/usr/bin/qppcad
 
 cp ../../data/images/icon.svg qppcad/icon.svg
@@ -30,7 +30,7 @@ rm -rf qppcad/include
 rm -rf qppcad/lib/python*/test
 rm -rf qppcad/bin/idle*
 
-./appimagetool-x86_64.AppImage qppcad
+./appimagetool-x86_64.AppImage QppCAD
 
 
 

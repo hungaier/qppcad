@@ -325,7 +325,7 @@ void simple_query::py_labels(geom_labels_style_e lstyle){
   auto [cur_ws, cur_it, al] = astate->ws_mgr->get_sel_tpl_itm<geom_view_t>(error_ctx_throw);
   if (!al)
     return;
-  al->m_labels->m_style.set_value(lstyle);
+  al->m_labels->m_style.set_value(static_cast<int>(lstyle));
 }
 
 pybind11::list simple_query::get_tool_groups() {

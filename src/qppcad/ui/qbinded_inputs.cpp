@@ -274,7 +274,9 @@ qbinded_float3_input_t::qbinded_float3_input_t(QWidget *parent) : QWidget(parent
 void qbinded_float3_input_t::spinbox_value_changed(double newval) {
   if (!(is_binded() && !m_ignore_state_change))
     return;
-  set_value(vector3<float>{sb_x->value(), sb_y->value(), sb_x->value()});
+  set_value(vector3<float>{static_cast<float>(sb_x->value()),
+                           static_cast<float>(sb_y->value()),
+                           static_cast<float>(sb_x->value())});
   on_value_changed();
   app_state_t::get_inst()->make_viewport_dirty();
 }
@@ -292,7 +294,7 @@ void qbinded_color3_input_t::mousePressEvent(QMouseEvent *event) {
   if (event->button() == Qt::LeftButton) {
     const QColor color = QColorDialog::getColor(m_stored_color, this, "Select Color");
     if (color.isValid() && is_binded()) {
-      set_value(vector3<float>{color.redF(), color.greenF(), color.blueF()});
+      set_value(vector3<float>{static_cast<float>(color.redF()), static_cast<float>(color.greenF()), static_cast<float>(color.blueF())});
       load_value_ex();
       on_value_changed();
       app_state_t::get_inst()->make_viewport_dirty();
@@ -901,7 +903,7 @@ qbinded_float_named_vector_t::qbinded_float_named_vector_t(std::vector<QString> 
             [this, i](double value) {
 
               if (i < this->m_binded_data.size() && this->m_binded_data[i]) {
-                m_binded_data[i]->set_value(value);
+                m_binded_data[i]->set_value(static_cast<float>(value));
                 if (m_binded_item
                     && i < this->m_updated_externally_event.size()
                     && this->m_updated_externally_event[i]

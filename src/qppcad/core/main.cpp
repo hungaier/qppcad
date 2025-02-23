@@ -40,9 +40,9 @@ int main (int argc, char **argv) {
   instrumentation::init();
   #endif
 
-  QCoreApplication::setOrganizationName("100ways");
-  QCoreApplication::setOrganizationDomain("100ways.dev");
-  QCoreApplication::setApplicationName("qppcad");
+  QCoreApplication::setOrganizationName("OpenSource");
+  QCoreApplication::setOrganizationDomain("zhanghuanhuai0716@aliyun.com");
+  QCoreApplication::setApplicationName("QppCAD");
   QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
   QGuiApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
 
@@ -60,7 +60,7 @@ int main (int argc, char **argv) {
   QApplication app(argc, argv);
 
   QCommandLineParser parser;
-  parser.setApplicationDescription("qpp::cad");
+  parser.setApplicationDescription("Qpp::CAD");
   parser.addHelpOption();
   parser.addVersionOption();
   parser.addPositionalArgument("file", "The file to open.");
@@ -89,7 +89,7 @@ int main (int argc, char **argv) {
   astate->tlog("@GIT_REVISION={}, @BUILD_DATE={}",
                build_info_t::get_git_version(), build_info_t::get_git_version());
 
-  std::ifstream test_in_dev_env("../data/refs/laf3_p3.vasp");
+  std::ifstream test_in_dev_env("./data/refs/laf3_p3.vasp");
   bool under_dev_env = test_in_dev_env.good();
 
   astate->init_fixtures();

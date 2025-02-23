@@ -1,5 +1,5 @@
 #include <qppcad/core/platform.hpp>
-#include <sys/resource.h>
+// #include <sys/resource.h>
 
 using namespace qpp;
 using namespace qpp::cad;
@@ -19,17 +19,18 @@ int parse_line(char* line){
 
 size_t platform_helper_t::get_mem_usage_mb() {
 
-  FILE* file = fopen("/proc/self/status", "r");
-  int result = -1;
-  char line[128];
+  // FILE* file = fopen("/proc/self/status", "r");
+  // int result = -1;
+  // char line[128];
 
-  while (fgets(line, 128, file) != nullptr){
-            if (strncmp(line, "VmRSS:", 6) == 0){
-          result = parse_line(line);
-          break;
-        }
-    }
-  fclose(file);
-  return result / 1024;
+  // while (fgets(line, 128, file) != nullptr){
+  //           if (strncmp(line, "VmRSS:", 6) == 0){
+  //         result = parse_line(line);
+  //         break;
+  //       }
+  //   }
+  // fclose(file);
+  // return result / 1024;
+  return 10;
 
 }

@@ -359,6 +359,7 @@ void add_new_ws_item_widget_t::control_top_type_parameters_visibility() {
 }
 
 void add_new_ws_item_widget_t::ok_button_clicked() {
+  app_state_t *astate = app_state_t::get_inst();
 
   if (m_type_param_name->text() == "") {
       int ret = QMessageBox::warning(this,
@@ -533,7 +534,10 @@ void add_new_ws_item_widget_t::ok_button_clicked() {
           auto nt =
               astate->ws_mgr->m_bhv_mgr->fbr_ws_item_by_type(py_note_book_t::get_type_static());
           auto aa_ap = nt->cast_as<py_note_book_t>();
-          if (!aa_ap) return;
+          if (!aa_ap) {
+              astate->tlog("failed to open py note book");
+              return;
+          };
           aa_ap->m_name.set_value(m_type_param_name->text().toStdString());
           cur_ws->add_item_to_ws(nt);
 

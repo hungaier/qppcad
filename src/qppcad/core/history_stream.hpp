@@ -502,6 +502,11 @@ public:
     return p_cur_value;
   }
 
+  void set_value(const STYPE &new_val) {
+    STYPE nval = new_val;
+    set_value(std::move(nval));
+  }
+
   void set_value(STYPE &&new_val) {
     if constexpr (std::is_floating_point<STYPE>::value) {
       if (std::fabs(p_cur_value - new_val) < std::numeric_limits<STYPE>::epsilon())
@@ -517,7 +522,7 @@ public:
         get_doctype() == hs_doc_type_e::hs_doc_persistent
         && super_parent
         && super_parent->get_commit_exclusive_on_change())
-      commit_value_exclusive(STYPE(p_cur_value));
+      commit_value_exclusive(std::move(STYPE(p_cur_value)));
   }
 
   void set_cvalue(STYPE new_val) {

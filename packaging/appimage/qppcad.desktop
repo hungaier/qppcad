@@ -1,8 +1,8 @@
 [Desktop Entry]
 Encoding=UTF-8
-Name=qppcad
+Name=QppCAD
 Comment=Molecular and crystal editor
-Exec=qppcad
+Exec=QppCAD
 Type=Application
 Icon=icon
 Categories=Science;
